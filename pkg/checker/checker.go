@@ -57,8 +57,22 @@ func WhatCanIdo(kclient *kubernetes.Clientset, ns string) {
 	// authorizationv1 "k8s.io/api/authorization/v1"
 	// authorizationv1client "k8s.io/client-go/kubernetes/typed/authorization/v1"
 
+	var actionGroup string
+	var actionGroupVer string
+
+	// /apis/apps/v1/deployments
 	actionVerb := "get"
 	actionRsc := "deployments"
+	// actionRsc := "pods"
+
+	switch actionRsc {
+	case "deployments":
+		actionGroup = "apps"
+		actionGroupVer = "v1"
+	case "pods":
+		actionGroup = ""
+		actionGroupVer = "v1"
+	}
 
 	o := &CanIOptions{}
 
@@ -73,6 +87,8 @@ func WhatCanIdo(kclient *kubernetes.Clientset, ns string) {
 				Namespace: ns,
 				Verb:      actionVerb,
 				Resource:  actionRsc,
+				Group:     actionGroup,
+				Version:   actionGroupVer,
 			},
 			// NonResourceAttributes: &authorizationv1.NonResourceAttributes{
 			// 	Verb: actionVerb,
@@ -103,10 +119,3 @@ func WhatCanIdo(kclient *kubernetes.Clientset, ns string) {
 	}
 
 }
-
-// func verifyAccess(kclient *kubernetes.Clientset, injson) {
-// todo
-// split json
-// verify if namespace exists
-// take actions
-// }
