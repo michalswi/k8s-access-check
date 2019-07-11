@@ -49,73 +49,88 @@ func WhatCanIdoList(kclient *kubernetes.Clientset, ns string) {
 	fmt.Println(response.Status)
 }
 
+func Runner(kclient *kubernetes.Clientset, decjson map[string]interface{}, ns string) {
+
+	GetKubeVersion(kclient)
+	WhatCanIdo(kclient, decjson, ns)
+	// WhatCanIdoList(kclient, ns)
+}
+
 // Checks if user has access to a certain resource
 // $ kubectl auth can-i get deployments
 // $ kubectl auth can-i get deployments -n kube-system
-func WhatCanIdo(kclient *kubernetes.Clientset, ns string) {
+func WhatCanIdo(kclient *kubernetes.Clientset, decjson map[string]interface{}, ns string) {
 	// add to import:
 	// authorizationv1 "k8s.io/api/authorization/v1"
 	// authorizationv1client "k8s.io/client-go/kubernetes/typed/authorization/v1"
 
+	var actionVerb string
+	var actionRsc string
 	var actionGroup string
 	var actionGroupVer string
 
-	// /apis/apps/v1/deployments
-	actionVerb := "get"
-	actionRsc := "deployments"
-	// actionRsc := "pods"
+	for verb, rsrc := range decjson {
+		actionVerb = verb
+		// fmt.Println("actionVerb:", actionVerb)
+		// fmt.Println("all resources:", rsrc)
+		for _, r := range rsrc.([]interface{}) {
+			rFormat := fmt.Sprintf("%v", r)
+			actionRsc = rFormat
+			// fmt.Printf("actionRsc: %s\n", actionRsc)
 
-	switch actionRsc {
-	case "deployments":
-		actionGroup = "apps"
-		actionGroupVer = "v1"
-	case "pods":
-		actionGroup = ""
-		actionGroupVer = "v1"
-	}
+			// /apis/apps/v1/deployments
+			switch actionRsc {
+			case "deployments":
+				actionGroup = "apps"
+				actionGroupVer = "v1"
+			case "pods":
+				actionGroup = ""
+				actionGroupVer = "v1"
+			}
 
-	o := &CanIOptions{}
+			o := &CanIOptions{}
 
-	o.AuthClient = kclient.AuthorizationV1()
+			o.AuthClient = kclient.AuthorizationV1()
 
-	// SelfSubjectAccessReview (SSAR)
-	var ssar *authorizationv1.SelfSubjectAccessReview
-	ssar = &authorizationv1.SelfSubjectAccessReview{
-		// ssar := &authorizationv1.SelfSubjectAccessReview{
-		Spec: authorizationv1.SelfSubjectAccessReviewSpec{
-			ResourceAttributes: &authorizationv1.ResourceAttributes{
-				Namespace: ns,
-				Verb:      actionVerb,
-				Resource:  actionRsc,
-				Group:     actionGroup,
-				Version:   actionGroupVer,
-			},
-			// NonResourceAttributes: &authorizationv1.NonResourceAttributes{
-			// 	Verb: actionVerb,
-			// },
-		},
-	}
+			// SelfSubjectAccessReview (SSAR)
+			var ssar *authorizationv1.SelfSubjectAccessReview
+			ssar = &authorizationv1.SelfSubjectAccessReview{
+				// ssar := &authorizationv1.SelfSubjectAccessReview{
+				Spec: authorizationv1.SelfSubjectAccessReviewSpec{
+					ResourceAttributes: &authorizationv1.ResourceAttributes{
+						Namespace: ns,
+						Verb:      actionVerb,
+						Resource:  actionRsc,
+						Group:     actionGroup,
+						Version:   actionGroupVer,
+					},
+					// NonResourceAttributes: &authorizationv1.NonResourceAttributes{
+					// 	Verb: actionVerb,
+					// },
+				},
+			}
 
-	response, err := o.AuthClient.SelfSubjectAccessReviews().Create(ssar)
-	// response, err := kclient.AuthorizationV1().SelfSubjectAccessReviews().Create(ssar)
-	if err != nil {
-		log.Printf("%v", err)
-	}
+			response, err := o.AuthClient.SelfSubjectAccessReviews().Create(ssar)
+			// response, err := kclient.AuthorizationV1().SelfSubjectAccessReviews().Create(ssar)
+			if err != nil {
+				log.Printf("%v", err)
+			}
 
-	// fmt.Println(response)
-	// fmt.Println(response.Spec)
-	// fmt.Println(response.Status.Allowed)
+			// fmt.Println(response)
+			// fmt.Println(response.Spec)
+			// fmt.Println(response.Status.Allowed)
 
-	if response.Status.Allowed {
-		log.Printf("User can /%s/ a /%s/, status: ALLOWED", actionVerb, actionRsc)
-	} else {
-		log.Printf("User can /%s/ a /%s/, status: NOTALLOWED", actionVerb, actionRsc)
-		if len(response.Status.Reason) > 0 {
-			log.Printf("%v", response.Status.Reason)
+			if response.Status.Allowed {
+				log.Printf("User can /%s/ a /%s/, status: ALLOWED", actionVerb, actionRsc)
+			} else {
+				log.Printf("User can /%s/ a /%s/, status: NOTALLOWED", actionVerb, actionRsc)
+				if len(response.Status.Reason) > 0 {
+					log.Printf("%v", response.Status.Reason)
+				}
+				if len(response.Status.EvaluationError) > 0 {
+					log.Printf("%v", response.Status.EvaluationError)
+				}
+			}
 		}
-		if len(response.Status.EvaluationError) > 0 {
-			log.Printf("%v", response.Status.EvaluationError)
-		}
 	}
-
 }

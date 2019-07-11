@@ -1,9 +1,6 @@
 {
-    "namespace": "default",
     "action": {
-        "create":["deployment","pod","service","serviceaccount"],
-        "get":["deployment","pod","service","serviceaccount"],
-        "list":["deployment","pod","service","serviceaccount"],
-        "delete":["deployment","pod","service","serviceaccount"]
+        "create":["deployments","pods"],
+        "get":["deployments","pods"]
     }
 }
