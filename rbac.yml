@@ -9,9 +9,9 @@ metadata:
   namespace: default
   name: michal-role
 rules:
-- apiGroups: [""]
+- apiGroups: ["apps"]
   resources: ["deployments"]   
-  verbs: ["get", "watch", "list"]
+  verbs: ["get", "create"]
 ---
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1

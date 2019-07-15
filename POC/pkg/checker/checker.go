@@ -10,9 +10,9 @@ import (
 )
 
 // https://github.com/kubernetes/kubernetes/blob/master/pkg/kubectl/cmd/auth/cani.go#L234
-type CanIOptions struct {
-	AuthClient authorizationv1client.AuthorizationV1Interface
-	Namespace  string
+type canIOptions struct {
+	authClient authorizationv1client.AuthorizationV1Interface
+	namespace  string
 }
 
 func GetKubeVersion(kclient *kubernetes.Clientset) {
@@ -30,9 +30,9 @@ func WhatCanIdoList(kclient *kubernetes.Clientset, ns string) {
 	// authorizationv1 "k8s.io/api/authorization/v1"
 	// authorizationv1client "k8s.io/client-go/kubernetes/typed/authorization/v1"
 
-	o := &CanIOptions{}
+	o := &canIOptions{}
 
-	o.AuthClient = kclient.AuthorizationV1()
+	o.authClient = kclient.AuthorizationV1()
 
 	// SelfSubjectAccessReview (SSAR)
 	ssar := &authorizationv1.SelfSubjectRulesReview{
@@ -41,7 +41,7 @@ func WhatCanIdoList(kclient *kubernetes.Clientset, ns string) {
 		},
 	}
 
-	response, err := o.AuthClient.SelfSubjectRulesReviews().Create(ssar)
+	response, err := o.authClient.SelfSubjectRulesReviews().Create(ssar)
 	if err != nil {
 		log.Printf("%v", err)
 	}
@@ -74,9 +74,9 @@ func WhatCanIdo(kclient *kubernetes.Clientset, ns string) {
 		actionGroupVer = "v1"
 	}
 
-	o := &CanIOptions{}
+	o := &canIOptions{}
 
-	o.AuthClient = kclient.AuthorizationV1()
+	o.authClient = kclient.AuthorizationV1()
 
 	// SelfSubjectAccessReview (SSAR)
 	var ssar *authorizationv1.SelfSubjectAccessReview
@@ -96,7 +96,7 @@ func WhatCanIdo(kclient *kubernetes.Clientset, ns string) {
 		},
 	}
 
-	response, err := o.AuthClient.SelfSubjectAccessReviews().Create(ssar)
+	response, err := o.authClient.SelfSubjectAccessReviews().Create(ssar)
 	// response, err := kclient.AuthorizationV1().SelfSubjectAccessReviews().Create(ssar)
 	if err != nil {
 		log.Printf("%v", err)

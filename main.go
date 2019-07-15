@@ -14,7 +14,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// go run main.go --ns=<namespace_name> --run-outside-k-cluster true
+// go run main.go --dir <json> --ns <namespace> --run-outside-k-cluster true
 
 func newClientSet(runOutsideKcluster bool) (*kubernetes.Clientset, error) {
 
@@ -84,11 +84,14 @@ func main() {
 
 	log.Printf("Init namespace: %s\n", ns)
 
+	// struct 'Params' defined in 'checker.go'
+	params := &checker.Params{Kclient: clientset, Decjson: decjson, Ns: ns}
+
 	// one by one
-	// checker.GetKubeVersion(clientset)
-	// checker.WhatCanIdo(clientset, decjson, ns)
-	// checker.WhatCanIdoList(clientset, ns)
+	// params.GetKubeVersion()
+	// params.WhatCanIdo()
+	// params.WhatCanIdoList()
 
 	// run specific one
-	checker.Runner(clientset, decjson, ns)
+	params.Runner()
 }
