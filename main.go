@@ -61,10 +61,10 @@ func main() {
 
 	// namespace
 	var ns string
-	flag.StringVar(&ns, "ns", "default", "Set this flag when changing default namespace.")
+	flag.StringVar(&ns, "ns", "default", "Set this flag when changing the default namespace.")
 
 	// cloudconfig
-	runOutsideKcluster := flag.Bool("run-outside-k-cluster", false, "Set this flag when running outside of the cluster.")
+	runOutsideKcluster := flag.Bool("run-outside-k-cluster", false, "Set this flag when running outside of the cluster, not in pod.")
 	flag.Parse()
 
 	// 'dir' must be
